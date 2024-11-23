@@ -51,46 +51,18 @@ const renderer = new THREE.WebGLRenderer({
 });
 
 renderer.setSize(sizes.width, sizes.height);
-// renderer.render(scene, camera);
 
-//Animation using JS native
-let time = Date.now()
+const clock = new THREE.Clock()
 
-// const tick=()=>{
-//     //Time
-//     const currentTime=Date.now()
-//     const deltaTime= currentTime-time
-//     //Update objects
-//     groupCubes.rotation.y+=0.00001*deltaTime
-//     //render
-//     renderer.render(scene, camera);
-//     //Call tick again on the next frame
-//     window.requestAnimationFrame(tick)
-// }
-// tick()
-
-//Animation using Three.js variables & methods
-
-// const clock = new THREE.Clock()
-
-// const tick = () =>
-// {
-//     const elapsedTime = clock.getElapsedTime()
-//     //Update objects
-//     groupCubes.rotation.y=Math.sin(elapsedTime)
-//     groupCubes.rotation.x=Math.cos(elapsedTime)
-//     //render
-//     renderer.render(scene, camera);
-//     //Call tick again on the next frame
-//     window.requestAnimationFrame(tick)
-// }
-// tick()
-
-//Animation with gsap
-
-gsap.to(mesh.position, {duration:1, delay:1, x:2})
-const tick=()=>{
-    renderer.render(scene,camera)
+const tick = () =>
+{
+    const elapsedTime = clock.getElapsedTime()
+    //Update objects
+    groupCubes.rotation.y=Math.sin(elapsedTime)
+    groupCubes.rotation.x=Math.cos(elapsedTime)
+    //render
+    renderer.render(scene, camera);
+    //Call tick again on the next frame
     window.requestAnimationFrame(tick)
 }
 tick()
