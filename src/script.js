@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { Object3D } from "three";
 import gsap from 'gsap';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
 
 //Mesh
 const mesh = new THREE.Mesh(
@@ -18,13 +19,20 @@ cube1.position.set(-1, 0, 0);
 
 //Sets up basic sizes
 const sizes = {
-  width: 800,
-  height: 600,
+  width: window.innerWidth,
+  height: window.innerHeight,
 };
 
 //Camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
 camera.position.z = 3;
+
+//Canvas
+const canvas = document.querySelector("canvas.webgl");
+
+//Controls
+const controls= new OrbitControls(camera, canvas)
+controls.enableDamping=true;
 
 //Group
 const groupCubes = new THREE.Group();
@@ -33,9 +41,6 @@ groupCubes.position.y = 1;
 
 //Look at this!
 camera.lookAt(cube1.position);
-
-//Canvas
-const canvas = document.querySelector("canvas.webgl");
 
 //Scene
 const scene = new THREE.Scene();
@@ -60,6 +65,8 @@ const tick = () =>
     //Update objects
     groupCubes.rotation.y=Math.sin(elapsedTime)
     groupCubes.rotation.x=Math.cos(elapsedTime)
+    //Update controls
+    controls.update()
     //render
     renderer.render(scene, camera);
     //Call tick again on the next frame
