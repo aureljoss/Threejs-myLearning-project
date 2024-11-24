@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { Object3D } from "three";
 import gsap from 'gsap';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
+import { BufferAttribute } from "three";
 
 //Mesh
 const mesh = new THREE.Mesh(
@@ -12,10 +13,22 @@ mesh.position.set(1, 0, 0);
 mesh.rotation.x = Math.PI * 0.25;
 
 const cube1 = new THREE.Mesh(
-  new THREE.BoxGeometry(1, 1, 1),
-  new THREE.MeshBasicMaterial({ color: "blue" })
+  new THREE.BoxGeometry(1, 1, 1,2,2,2),
+  new THREE.MeshBasicMaterial({ color: "blue", wireframe:true})
 );
 cube1.position.set(-1, 0, 0);
+
+//Buffer Geometry
+const geometry= new THREE.BufferGeometry()
+const count = 50
+const positionsArray= new Float32Array(count *9)
+for (let i=0; i<count *9; i++){
+  positionsArray[i]=(Math.random()-0.5)*4
+}
+const positionsAttribute= new THREE.BufferAttribute(positionsArray, 3)
+geometry.setAttribute('position', positionsAttribute)
+const materialGeometry= new THREE.MeshBasicMaterial({color: 'green', wireframe:true})
+const meshBuffer= new THREE.Mesh(geometry, materialGeometry)
 
 //Sets up basic sizes
 const sizes = {
@@ -62,7 +75,7 @@ camera.lookAt(cube1.position);
 
 //Scene
 const scene = new THREE.Scene();
-scene.add(groupCubes, camera);
+scene.add(groupCubes, camera, meshBuffer);
 
 //Axes helper
 const axesHelper = new THREE.AxesHelper(2);
