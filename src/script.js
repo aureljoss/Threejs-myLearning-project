@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { BufferAttribute } from "three";
 import GUI from "lil-gui";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 
 //Materials
 const textureLoader = new THREE.TextureLoader();
@@ -24,6 +25,15 @@ colorGround.wrapS = THREE.RepeatWrapping;
 colorGround.wrapT = THREE.RepeatWrapping;
 colorGround.rotation = Math.PI * 0.25;
 
+// Environment Map
+const rgbeLoader= new RGBELoader()
+rgbeLoader.load('./Static/environmentMap/Saint-Ulrich-Chapel-Treuchtlingen-4K.hdr',(environmentMap)=>{
+  environmentMap.mapping=THREE.EquirectangularReflectionMapping
+  scene.background=environmentMap
+  scene.environment=environmentMap
+})
+
+
 //Mesh
 const mesh = new THREE.Mesh(
   new THREE.BoxGeometry(1, 1, 1),
@@ -32,19 +42,23 @@ const mesh = new THREE.Mesh(
 
 mesh.position.set(1, 0, 0);
 mesh.rotation.x = Math.PI * 0.25;
+mesh.castShadow=true
+mesh.receiveShadow=true
 
 const cube1 = new THREE.Mesh(
   new THREE.BoxGeometry(1, 1, 1, 2, 2, 2),
-  new THREE.MeshBasicMaterial({ color: "blue", wireframe: true })
+  new THREE.MeshNormalMaterial()
 );
 cube1.position.set(-1, 0, 0);
+cube1.castShadow=true
+cube1.receiveShadow=true
 
 const plane= new THREE.Mesh(
   new THREE.PlaneGeometry(10,10), 
   new THREE.MeshStandardMaterial({map:colorGround, side:THREE.DoubleSide})
 )
-
 plane.rotation.x=Math.PI*0.5
+plane.receiveShadow=true
 
 //Buffer Geometry
 const bufferGeometry = new THREE.BufferGeometry();
@@ -85,9 +99,14 @@ window.addEventListener("resize", () => {
 //Camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
 camera.position.z = 3;
+camera.position.y=3;
 
 //Lights
 const directionalLight= new THREE.DirectionalLight('white', 5)
+const spotLight = new THREE.SpotLight('white', 140, 100, Math.PI*0.1, 0.25, 1)
+spotLight.position.set(-2,5,-2)
+const spotLightHelper= new THREE.SpotLightHelper(spotLight)
+spotLight.castShadow=true
 
 //Canvas
 const canvas = document.querySelector("canvas.webgl");
@@ -106,7 +125,7 @@ camera.lookAt(cube1.position);
 
 //Scene
 const scene = new THREE.Scene();
-scene.add(groupCubes, camera, meshBuffer, directionalLight, plane);
+scene.add(groupCubes, camera, meshBuffer, directionalLight, plane,spotLight,spotLightHelper);
 
 //Axes helper
 const axesHelper = new THREE.AxesHelper(2);
@@ -156,6 +175,7 @@ gui
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
+renderer.shadowMap.enabled=true
 
 renderer.setSize(sizes.width, sizes.height);
 
