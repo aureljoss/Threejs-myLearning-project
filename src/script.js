@@ -6,6 +6,7 @@ import { BufferAttribute } from "three";
 import GUI from "lil-gui";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import CANNON from 'cannon';
+import { floor, PI } from "three/webgpu";
 
 //Materials
 const textureLoader = new THREE.TextureLoader();
@@ -34,7 +35,7 @@ rgbeLoader.load('./Static/environmentMap/Saint-Ulrich-Chapel-Treuchtlingen-4K.hd
   scene.environment=environmentMap
 })
 
-//Physics
+//Physics - Cannon.js
 const world=new CANNON.World()
 world.gravity.set(0, -9.82, 0)
 
@@ -47,12 +48,38 @@ world.gravity.set(0, -9.82, 0)
     })
     world.addBody(bodyCannon)
 
+    //Cube object in cannon
+    const cubeCannon= new CANNON.Sphere(0.5)
+    const cubeBodyCannon= new CANNON.Body({
+      mass:1, 
+      position: new CANNON.Vec3(0,3,0),
+      shape: cubeCannon
+    })
+    world.addBody(cubeBodyCannon)
+
+    //Floor plane in cannon
+    const floorShape= new CANNON.Plane()
+    const floorBody= new CANNON.Body({
+      mass:0, 
+      shape:floorShape
+    })
+    world.addBody(floorBody)
+    floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1,0,0),Math.PI*0.5)
+
+    //Contact Material
+    const defaultCannonMat= new CANNON.Material('default')
+    const defaultContactMaterial= new CANNON.ContactMaterial(defaultCannonMat, defaultCannonMat, 
+      {friction:0.1, restitution:0.7}
+    )
+    world.defaultContactMaterial=defaultContactMaterial
+
+
 //Mesh
-const ball= new THREE.Mesh(
+const sphere= new THREE.Mesh(
   new THREE.SphereGeometry(0.5,32,16),
   new THREE.MeshBasicMaterial({ color: 'white' })
 )
-ball.position.set(-2,2,-2)
+sphere.position.set(0,3,0)
 
 const mesh = new THREE.Mesh(
   new THREE.BoxGeometry(1, 1, 1),
@@ -144,7 +171,7 @@ camera.lookAt(cube1.position);
 
 //Scene
 const scene = new THREE.Scene();
-scene.add(groupCubes, camera, meshBuffer, directionalLight, plane,spotLight,spotLightHelper,ball);
+scene.add(groupCubes, camera, meshBuffer, directionalLight, plane,spotLight,spotLightHelper,sphere);
 
 //Axes helper
 const axesHelper = new THREE.AxesHelper(2);
@@ -165,12 +192,16 @@ meshTweaks
   .addColor(materialBufferGeometry, "color")
   .name("Buffer Geometry Color");
 
-const cube1Tweaks = gui.addFolder("Cube1 Tweaks");
+const cube1Tweaks = gui.addFolder("Octahedron Tweaks");
 const debugObject = {};
 debugObject.spin = () => {
   gsap.to(cube1.rotation, { duration: 1, y: cube1.rotation.y + Math.PI * 2 });
 };
-cube1Tweaks.add(debugObject, "spin").name("Spin Red Cube");
+cube1Tweaks.add(debugObject, "spin").name("Spin Octahedron");
+debugObject.push=()=>{
+  bodyCannon.applyLocalForce(new CANNON.Vec3(150, 0, 0), new CANNON.Vec3(0, 0, 0))
+}
+gui.add(debugObject,"push").name('Push Sphere')
 
 debugObject.subdivision = 2;
 gui
@@ -199,9 +230,15 @@ renderer.shadowMap.enabled=true
 renderer.setSize(sizes.width, sizes.height);
 
 const clock = new THREE.Clock();
+let oldElapsedTime = 0
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+  const deltaTime = elapsedTime - oldElapsedTime
+  oldElapsedTime = elapsedTime
+  // Update physics (cannon.js)
+  world.step(1 / 60, deltaTime, 3)
+  sphere.position.copy(bodyCannon.position)
   //Update objects
   groupCubes.rotation.y = Math.sin(elapsedTime);
   groupCubes.rotation.x = Math.cos(elapsedTime);
