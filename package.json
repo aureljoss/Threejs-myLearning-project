@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/aureljoss/Threejs-myLearning-project#readme",
   "dependencies": {
+    "cannon": "^0.6.2",
     "gsap": "3.12",
     "lil-gui": "^0.20.0",
     "three": "^0.170.0",

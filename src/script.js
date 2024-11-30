@@ -5,6 +5,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { BufferAttribute } from "three";
 import GUI from "lil-gui";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+import CANNON from 'cannon';
 
 //Materials
 const textureLoader = new THREE.TextureLoader();
@@ -33,8 +34,26 @@ rgbeLoader.load('./Static/environmentMap/Saint-Ulrich-Chapel-Treuchtlingen-4K.hd
   scene.environment=environmentMap
 })
 
+//Physics
+const world=new CANNON.World()
+world.gravity.set(0, -9.82, 0)
+
+    //Ball object in cannon
+    const sphereCannon= new CANNON.Sphere(0.5)
+    const bodyCannon= new CANNON.Body({
+      mass:1, 
+      position: new CANNON.Vec3(0,3,0),
+      shape: sphereCannon
+    })
+    world.addBody(bodyCannon)
 
 //Mesh
+const ball= new THREE.Mesh(
+  new THREE.SphereGeometry(0.5,32,16),
+  new THREE.MeshBasicMaterial({ color: 'white' })
+)
+ball.position.set(-2,2,-2)
+
 const mesh = new THREE.Mesh(
   new THREE.BoxGeometry(1, 1, 1),
   new THREE.MeshStandardMaterial(meshMaterial)
@@ -46,7 +65,7 @@ mesh.castShadow=true
 mesh.receiveShadow=true
 
 const cube1 = new THREE.Mesh(
-  new THREE.BoxGeometry(1, 1, 1, 2, 2, 2),
+  new THREE.OctahedronGeometry(1,1),
   new THREE.MeshNormalMaterial()
 );
 cube1.position.set(-1, 0, 0);
@@ -125,7 +144,7 @@ camera.lookAt(cube1.position);
 
 //Scene
 const scene = new THREE.Scene();
-scene.add(groupCubes, camera, meshBuffer, directionalLight, plane,spotLight,spotLightHelper);
+scene.add(groupCubes, camera, meshBuffer, directionalLight, plane,spotLight,spotLightHelper,ball);
 
 //Axes helper
 const axesHelper = new THREE.AxesHelper(2);
