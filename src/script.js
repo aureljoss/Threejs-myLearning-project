@@ -7,6 +7,7 @@ import GUI from "lil-gui";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import CANNON from 'cannon';
 import { floor, PI } from "three/webgpu";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 //Materials
 const textureLoader = new THREE.TextureLoader();
@@ -69,7 +70,7 @@ world.gravity.set(0, -9.82, 0)
     //Contact Material
     const defaultCannonMat= new CANNON.Material('default')
     const defaultContactMaterial= new CANNON.ContactMaterial(defaultCannonMat, defaultCannonMat, 
-      {friction:0.1, restitution:0.7}
+      {friction:10, restitution:0.7}
     )
     world.defaultContactMaterial=defaultContactMaterial
 
@@ -121,6 +122,16 @@ const materialBufferGeometry = new THREE.MeshBasicMaterial({
 });
 const meshBuffer = new THREE.Mesh(bufferGeometry, materialBufferGeometry);
 
+//Import Models
+const gltfLoader= new GLTFLoader()
+gltfLoader.load(
+  './Static/models/Lantern/glTF/Lantern.gltf',
+  (gltf) =>
+  {
+      gltf.scene.scale.set(0.2, 0.2, 0.2)
+      scene.add(gltf.scene)
+  }
+)
 //Sets up basic sizes
 const sizes = {
   width: window.innerWidth,
@@ -199,7 +210,7 @@ debugObject.spin = () => {
 };
 cube1Tweaks.add(debugObject, "spin").name("Spin Octahedron");
 debugObject.push=()=>{
-  bodyCannon.applyLocalForce(new CANNON.Vec3(150, 0, 0), new CANNON.Vec3(0, 0, 0))
+  bodyCannon.applyLocalForce(new CANNON.Vec3(1, 0, 0), new CANNON.Vec3(0, 0, 0))
 }
 gui.add(debugObject,"push").name('Push Sphere')
 
