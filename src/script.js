@@ -7,6 +7,7 @@ import GUI from "lil-gui";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import CANNON from 'cannon';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { PI } from "three/webgpu";
 
 //Materials
 const textureLoader = new THREE.TextureLoader();
@@ -138,9 +139,9 @@ gltfLoader.load(
   gltfLoader.load(
     './Static/models/Fox/glTF/Fox.gltf',
     (gltf) =>
-    {   console.log(gltf)
-        gltf.scene.scale.set(0.02, 0.02, 0.02)
-        gltf.scene.position.set(2,0,2)
+    {   
+        foxModel=gltf.scene
+        foxModel.scale.set(0.02, 0.02, 0.02)
         scene.add(gltf.scene)
         //Load animations from the gltf model
         mixer= new THREE.AnimationMixer(gltf.scene)
@@ -148,6 +149,19 @@ gltfLoader.load(
         action.play()
     }
   )
+
+//Mouse
+const mouse = new THREE.Vector2()
+
+window.addEventListener('mousemove', (event) =>
+{
+    mouse.x = event.clientX / sizes.width * 2 - 1
+    mouse.y = - (event.clientY / sizes.height) * 2 + 1
+})
+
+  //Raycaster
+  const raycaster= new THREE.Raycaster()
+  let currentIntersect = null
 
 //Sets up basic sizes
 const sizes = {
@@ -267,8 +281,38 @@ const tick = () => {
   // Update physics (cannon.js)
   world.step(1 / 60, deltaTime, 3)
   sphere.position.copy(bodyCannon.position)
+  //Raycaster
+  raycaster.setFromCamera(mouse,camera)
   //Load animation from gltf model
-  if (mixer){mixer.update(deltaTime)}
+  if (mixer){
+    mixer.update(deltaTime/2)
+  }
+  if(foxModel){
+    foxModel.position.x=- Math.sin(elapsedTime*0.3)*4
+    foxModel.position.z=- Math.cos(elapsedTime*0.3)*4
+    foxModel.rotation.y=Math.PI*elapsedTime*0.08;
+      //Intersect with model
+    const modelIntersect=raycaster.intersectObject(foxModel)
+    if(modelIntersect.length)
+      {
+          if(!currentIntersect)
+          {
+              console.log('mouse enter')
+          }
+  
+          currentIntersect = modelIntersect
+      }
+      else
+      {
+          if(currentIntersect)
+          {
+              console.log('mouse leave')
+          }
+          
+          currentIntersect = null
+      }
+    
+  }
   //Update objects
   groupCubes.rotation.y = Math.sin(elapsedTime);
   groupCubes.rotation.x = Math.cos(elapsedTime);
