@@ -6,7 +6,6 @@ import { BufferAttribute } from "three";
 import GUI from "lil-gui";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import CANNON from 'cannon';
-import { floor, PI } from "three/webgpu";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 //Materials
@@ -29,12 +28,12 @@ colorGround.wrapT = THREE.RepeatWrapping;
 colorGround.rotation = Math.PI * 0.25;
 
 // Environment Map
-const rgbeLoader= new RGBELoader()
-rgbeLoader.load('./Static/environmentMap/Saint-Ulrich-Chapel-Treuchtlingen-4K.hdr',(environmentMap)=>{
-  environmentMap.mapping=THREE.EquirectangularReflectionMapping
-  scene.background=environmentMap
-  scene.environment=environmentMap
-})
+// const rgbeLoader= new RGBELoader()
+// rgbeLoader.load('./Static/environmentMap/Saint-Ulrich-Chapel-Treuchtlingen-4K.hdr',(environmentMap)=>{
+//   environmentMap.mapping=THREE.EquirectangularReflectionMapping
+//   scene.background=environmentMap
+//   scene.environment=environmentMap
+// })
 
 //Physics - Cannon.js
 const world=new CANNON.World()
@@ -123,15 +122,33 @@ const materialBufferGeometry = new THREE.MeshBasicMaterial({
 const meshBuffer = new THREE.Mesh(bufferGeometry, materialBufferGeometry);
 
 //Import Models
+let mixer=null
 const gltfLoader= new GLTFLoader()
+  //Lantern model
 gltfLoader.load(
   './Static/models/Lantern/glTF/Lantern.gltf',
   (gltf) =>
-  {
+  {   
       gltf.scene.scale.set(0.2, 0.2, 0.2)
       scene.add(gltf.scene)
   }
 )
+  //Fox Model
+  let foxModel=null
+  gltfLoader.load(
+    './Static/models/Fox/glTF/Fox.gltf',
+    (gltf) =>
+    {   console.log(gltf)
+        gltf.scene.scale.set(0.02, 0.02, 0.02)
+        gltf.scene.position.set(2,0,2)
+        scene.add(gltf.scene)
+        //Load animations from the gltf model
+        mixer= new THREE.AnimationMixer(gltf.scene)
+        const action= mixer.clipAction(gltf.animations[1])
+        action.play()
+    }
+  )
+
 //Sets up basic sizes
 const sizes = {
   width: window.innerWidth,
@@ -250,6 +267,8 @@ const tick = () => {
   // Update physics (cannon.js)
   world.step(1 / 60, deltaTime, 3)
   sphere.position.copy(bodyCannon.position)
+  //Load animation from gltf model
+  if (mixer){mixer.update(deltaTime)}
   //Update objects
   groupCubes.rotation.y = Math.sin(elapsedTime);
   groupCubes.rotation.x = Math.cos(elapsedTime);
