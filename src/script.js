@@ -7,7 +7,7 @@ import GUI from "lil-gui";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import CANNON from 'cannon';
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { PI } from "three/webgpu";
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 
 //Materials
 const textureLoader = new THREE.TextureLoader();
@@ -125,6 +125,8 @@ const meshBuffer = new THREE.Mesh(bufferGeometry, materialBufferGeometry);
 //Import Models
 let mixer=null
 const gltfLoader= new GLTFLoader()
+const dracoLoader = new DRACOLoader()
+
   //Lantern model
 gltfLoader.load(
   './Static/models/Lantern/glTF/Lantern.gltf',
@@ -149,6 +151,21 @@ gltfLoader.load(
         action.play()
     }
   )
+
+//Lapi Model
+let lapiModel=null
+dracoLoader.setDecoderPath('./Static/draco/')
+gltfLoader.setDRACOLoader(dracoLoader)
+gltfLoader.load(
+  './Static/models/Lapi/Lapi.gltf',
+  (gltf) =>
+  {   
+    lapiModel=gltf.scene
+    lapiModel.position.set(4,0,4)
+    scene.add(gltf.scene)
+    console.log(lapiModel)
+  }
+)
 
 //Mouse
 const mouse = new THREE.Vector2()
@@ -290,7 +307,7 @@ const tick = () => {
   if(foxModel){
     foxModel.position.x=- Math.sin(elapsedTime*0.3)*4
     foxModel.position.z=- Math.cos(elapsedTime*0.3)*4
-    foxModel.rotation.y=Math.PI*elapsedTime*0.08;
+    foxModel.rotation.y=Math.PI*elapsedTime*0.04;
       //Intersect with model
     const modelIntersect=raycaster.intersectObject(foxModel)
     if(modelIntersect.length)
