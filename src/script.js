@@ -30,11 +30,13 @@ colorGround.rotation = Math.PI * 0.25;
 
 // Environment Map
 // const rgbeLoader= new RGBELoader()
-// rgbeLoader.load('./Static/environmentMap/Saint-Ulrich-Chapel-Treuchtlingen-4K.hdr',(environmentMap)=>{
-//   environmentMap.mapping=THREE.EquirectangularReflectionMapping
-//   scene.background=environmentMap
-//   scene.environment=environmentMap
-// })
+textureLoader.load('./Static/environmentMap/interior_views_cozy_wood_cabin_with_cauldron_and_p.jpg',(environmentMap)=>{
+  environmentMap.mapping=THREE.EquirectangularReflectionMapping
+  environmentMap.colorSpace = THREE.SRGBColorSpace
+  scene.background=environmentMap
+  scene.environment=environmentMap
+  scene.environmentIntensity = 1
+})
 
 //Physics - Cannon.js
 const world=new CANNON.World()
@@ -208,10 +210,11 @@ camera.position.y=3;
 
 //Lights
 const directionalLight= new THREE.DirectionalLight('white', 5)
-const spotLight = new THREE.SpotLight('white', 140, 100, Math.PI*0.1, 0.25, 1)
-spotLight.position.set(-2,5,-2)
+const spotLight = new THREE.SpotLight('white', 40, 8, Math.PI*0.1, 0.25, 1)
+spotLight.position.set(2,3,0)
 const spotLightHelper= new THREE.SpotLightHelper(spotLight)
 spotLight.castShadow=true
+const ambientLight= new THREE.AmbientLight('blue',2)
 
 //Canvas
 const canvas = document.querySelector("canvas.webgl");
@@ -230,7 +233,7 @@ camera.lookAt(cube1.position);
 
 //Scene
 const scene = new THREE.Scene();
-scene.add(groupCubes, camera, meshBuffer, directionalLight, plane,spotLight,spotLightHelper,sphere);
+scene.add(groupCubes, camera, meshBuffer, directionalLight, plane,spotLight,spotLightHelper,sphere,ambientLight);
 
 //Axes helper
 const axesHelper = new THREE.AxesHelper(2);
